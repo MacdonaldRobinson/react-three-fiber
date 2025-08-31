@@ -1,0 +1,69 @@
+name: Deploy React Three Fiber
+
+on:
+    push:
+        branches:
+            - master # Trigger deployment on push to the master branch
+
+permissions:
+    contents: write # Allow writing to the repository contents
+    pages: write # Allow writing to the Pages branch
+    id-token: write # Allow issuing ID tokens for authentication
+
+jobs:
+    build_and_deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18 # Ensure this matches your project's Node.js version
+
+            - name: Cache Node modules
+              uses: actions/cache@v3
+              with:
+                  path: ~/.npm # Cache node modules to speed up installs
+                  key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-modules-
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Cache Playwright browsers
+              uses: actions/cache@v3
+              with:
+                  path: ~/.cache/ms-playwright # Cache Playwright browser binaries
+                  key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-playwright-browsers-
+
+            # This step only installs browsers if the cache was missed
+            - name: Install Playwright Browsers (if not cached)
+              run: |
+                  PLAYWRIGHT_CACHE_DIR="/home/runner/.cache/ms-playwright"
+                  if [ ! -d "$PLAYWRIGHT_CACHE_DIR" ]; then
+                    echo "Playwright browsers not found, installing...";
+                    npx playwright install --with-deps;
+                  else
+                    echo "Playwright browsers are already cached, skipping installation.";
+                  fi
+
+            - name: Run tests with Vitest
+              run: npm run test:unit
+
+            - name: Run tests with Playwright
+              run: npm run test:e2e
+
+            - name: Build project
+              run: npm run build # Vite outputs the build to the "dist" folder by default
+
+            - name: Deploy to GitHub Pages
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  publish_dir: ./dist
