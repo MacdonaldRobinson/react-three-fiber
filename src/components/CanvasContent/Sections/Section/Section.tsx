@@ -3,8 +3,10 @@ import { useContext, useEffect, useRef } from "react";
 import SceneContext, {
     type TSectionProps,
 } from "../../../../contexts/SceneContext/SceneContext";
+import { useThree } from "@react-three/fiber";
 
 const Section = ({ title, content, meshRef }: TSectionProps) => {
+    const { camera } = useThree();
     const sectionRef = useRef<HTMLDivElement>(null);
     const sceneContext = useContext(SceneContext);
 
@@ -29,7 +31,7 @@ const Section = ({ title, content, meshRef }: TSectionProps) => {
         <SectionWrapper
             ref={sectionRef}
             onViewportEnter={() => {
-                console.log(title);
+                console.log(camera);
             }}
         >
             <h2>{title}</h2>

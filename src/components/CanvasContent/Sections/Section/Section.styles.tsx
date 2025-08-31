@@ -7,7 +7,9 @@ export const SectionDiv = styled.div`
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    margin: 50px;
+    margin: 5vh;
+    padding: 5vw;
+    border-radius: 10px;
 `;
 
 export const SectionWrapper = motion(SectionDiv);

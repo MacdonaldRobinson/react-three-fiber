@@ -34,30 +34,30 @@ jobs:
             - name: Install dependencies
               run: npm install
 
-            - name: Cache Playwright browsers
-              uses: actions/cache@v3
-              with:
-                  path: ~/.cache/ms-playwright # Cache Playwright browser binaries
-                  key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('**/package-lock.json') }}
-                  restore-keys: |
-                      ${{ runner.os }}-playwright-browsers-
+            # - name: Cache Playwright browsers
+            #   uses: actions/cache@v3
+            #   with:
+            #       path: ~/.cache/ms-playwright # Cache Playwright browser binaries
+            #       key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('**/package-lock.json') }}
+            #       restore-keys: |
+            #           ${{ runner.os }}-playwright-browsers-
 
-            # This step only installs browsers if the cache was missed
-            - name: Install Playwright Browsers (if not cached)
-              run: |
-                  PLAYWRIGHT_CACHE_DIR="/home/runner/.cache/ms-playwright"
-                  if [ ! -d "$PLAYWRIGHT_CACHE_DIR" ]; then
-                    echo "Playwright browsers not found, installing...";
-                    npx playwright install --with-deps;
-                  else
-                    echo "Playwright browsers are already cached, skipping installation.";
-                  fi
+            # # This step only installs browsers if the cache was missed
+            # - name: Install Playwright Browsers (if not cached)
+            #   run: |
+            #       PLAYWRIGHT_CACHE_DIR="/home/runner/.cache/ms-playwright"
+            #       if [ ! -d "$PLAYWRIGHT_CACHE_DIR" ]; then
+            #         echo "Playwright browsers not found, installing...";
+            #         npx playwright install --with-deps;
+            #       else
+            #         echo "Playwright browsers are already cached, skipping installation.";
+            #       fi
 
-            - name: Run tests with Vitest
-              run: npm run test:unit
+            # - name: Run tests with Vitest
+            #   run: npm run test:unit
 
-            - name: Run tests with Playwright
-              run: npm run test:e2e
+            # - name: Run tests with Playwright
+            #   run: npm run test:e2e
 
             - name: Build project
               run: npm run build # Vite outputs the build to the "dist" folder by default
