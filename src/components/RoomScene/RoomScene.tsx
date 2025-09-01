@@ -4,13 +4,10 @@ Command: npx gltfjsx@6.5.3 .\public\models\room\room.glb --typescript --output s
 */
 
 import * as THREE from "three";
-import React, { useContext, useEffect, useRef, type JSX } from "react";
-import { useGLTF, useScroll } from "@react-three/drei";
+import { useContext, useEffect, useRef, type JSX } from "react";
+import { useGLTF } from "@react-three/drei";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import SceneContext, {
-    type TSection,
-} from "../../contexts/SceneContext/SceneContext";
-import { useFrame, useThree } from "@react-three/fiber";
+import SceneContext from "../../contexts/SceneContext/SceneContext";
 
 type GLTFResult = GLTF & {
     nodes: {
@@ -117,7 +114,7 @@ export function RoomScene({ onReady, ...props }: TRoomScene) {
     const mousePadRef = useRef<THREE.Object3D>(null);
 
     const sceneContext = useContext(SceneContext);
-    const handleClick = (event) => {
+    const handleClick = (event: { eventObject: { uuid: string } }) => {
         if (!sceneContext) return;
 
         const found = sceneContext.sections.find(
