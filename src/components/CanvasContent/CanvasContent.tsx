@@ -21,8 +21,6 @@ const CanvasContent = () => {
         useState<React.RefObject<THREE.Object3D | null>>();
     const [chairRef, setChairRef] =
         useState<React.RefObject<THREE.Object3D | null>>();
-    const [phoneRef, setPhoneRef] =
-        useState<React.RefObject<THREE.Object3D | null>>();
     const [monitorRef, setMonitorRef] =
         useState<React.RefObject<THREE.Object3D | null>>();
     const [pictureFrameRef, setPictureFrameRef] =
@@ -72,7 +70,6 @@ const CanvasContent = () => {
                     onReady={(returnRefs: TOnReadyReturn) => {
                         console.log(returnRefs);
                         setChairRef(returnRefs.chairRef);
-                        setPhoneRef(returnRefs.phoneRef);
                         setMonitorRef(returnRefs.monitorRef);
                         setPictureFrameRef(returnRefs.pictureFrameRef);
                     }}
