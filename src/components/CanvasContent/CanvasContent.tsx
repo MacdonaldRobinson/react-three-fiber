@@ -8,50 +8,79 @@ import {
 import { Avatar } from "../Avatar/Avatar";
 import { useControls } from "leva";
 import { RoomScene, type TOnReadyReturn } from "../RoomScene/RoomScene";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import ScrollBehavior from "./ScrollBehavior/ScrollBehavior";
 import Section from "./Sections/Section/Section";
 import { SectionsWrapper } from "./CanvasContent.styles";
+import SceneContext from "../../contexts/SceneContext/SceneContext";
 
 const CanvasContent = () => {
-    const cameraRef = useRef<THREE.PerspectiveCamera>(null);
-    const [avatarRef, setAvatarRef] =
-        useState<React.RefObject<THREE.Object3D | null>>();
-    const [chairRef, setChairRef] =
-        useState<React.RefObject<THREE.Object3D | null>>();
-    const [monitorRef, setMonitorRef] =
-        useState<React.RefObject<THREE.Object3D | null>>();
-    const [pictureFrameRef, setPictureFrameRef] =
-        useState<React.RefObject<THREE.Object3D | null>>();
+    const sceneContext = useContext(SceneContext);
+    //const cameraRef = useRef<THREE.PerspectiveCamera>(null);
+    const { camera } = useThree();
+    const [avatar, setAvatar] = useState<THREE.Object3D>();
+    const [chair, setChair] = useState<THREE.Object3D>();
+    const [monitor, setMonitor] = useState<THREE.Object3D>();
+    const [pictureFrame, setPictureFrame] = useState<THREE.Object3D>();
+    const [phone, setPhone] = useState<THREE.Object3D>();
 
     useEffect(() => {
-        if (chairRef?.current && avatarRef?.current && cameraRef?.current) {
-            chairRef.current.position.z -= 0.2;
+        if (chair && avatar && camera) {
+            chair.position.z -= 0.2;
             // Get chair world position
             const worldPos = new THREE.Vector3();
-            chairRef.current.getWorldPosition(worldPos);
+            chair.getWorldPosition(worldPos);
 
             // Set avatar to world position
-            avatarRef.current.position.copy(worldPos);
-            avatarRef.current.position.y += 0.5; // offset to sit on chair
+            avatar.position.copy(worldPos);
+            avatar.position.y += 0.5; // offset to sit on chair
 
             const chairForward = new THREE.Vector3(0, 0, -1); // chair’s local front
-            const worldForward = chairForward.applyQuaternion(
-                chairRef.current.quaternion
-            );
+            const worldForward = chairForward.applyQuaternion(chair.quaternion);
 
-            avatarRef.current.lookAt(
-                chairRef.current.position.clone().add(worldForward)
-            );
+            avatar.lookAt(chair.position.clone().add(worldForward));
         }
-    }, [chairRef, avatarRef, cameraRef]);
+    }, [chair, avatar, camera]);
 
     useFrame(() => {
-        if (chairRef?.current && avatarRef?.current && cameraRef?.current) {
-            cameraRef.current.lookAt(avatarRef.current.position);
+        if (!sceneContext || sceneContext.sections.length == 0 || !camera)
+            return;
+
+        if (!sceneContext.currentSection) {
+            sceneContext.setActiveSection(sceneContext.sections[0]);
         }
+
+        if (!sceneContext.currentSection) return;
+
+        const targetPos = new THREE.Vector3();
+        sceneContext.currentSection.object3d.getWorldPosition(targetPos);
+
+        //console.log(sceneContext.currentSection.object3d.position);
+
+        camera.position.lerp(
+            {
+                x: targetPos.x,
+                y: targetPos.y + 1,
+                z: targetPos.z + 1,
+            },
+            0.05
+        );
+
+        const targetDirection = new THREE.Vector3();
+        sceneContext.currentSection.object3d.getWorldDirection(targetDirection);
+
+        // Current look-at point
+        const currentLookAt = new THREE.Vector3();
+        camera.getWorldDirection(currentLookAt); // gets forward unit vector
+        currentLookAt.add(camera.position); // convert to actual point in space
+
+        // Smoothly interpolate the look-at point toward the target
+        currentLookAt.lerp(targetPos, 0.03); // 0.05 = speed
+
+        // Rotate camera to look at the new interpolated point
+        camera.lookAt(currentLookAt);
     });
 
     const { animation } = useControls({
@@ -60,65 +89,64 @@ const CanvasContent = () => {
             options: ["Typing", "Standing", "Falling"],
         },
     });
+
     return (
         <>
             <Sky />
             <Environment preset="sunset" background />
             <directionalLight castShadow intensity={1} position={[2, 5, 5]} />
-            <group position={[0, -0.99, -0.1]}>
-                <RoomScene
-                    onReady={(returnRefs: TOnReadyReturn) => {
-                        console.log(returnRefs);
-                        setChairRef(returnRefs.chairRef);
-                        setMonitorRef(returnRefs.monitorRef);
-                        setPictureFrameRef(returnRefs.pictureFrameRef);
-                    }}
-                />
-                <Avatar
-                    animation={animation}
-                    onReady={(avatarRef) => {
-                        setAvatarRef(avatarRef);
-                    }}
-                />
-            </group>
             <ScrollControls pages={3}>
+                <group position={[0, -0.99, -0.1]}>
+                    <RoomScene
+                        onReady={(returnObjs: TOnReadyReturn) => {
+                            setChair(returnObjs.chair);
+                            setMonitor(returnObjs.monitor);
+                            setPictureFrame(returnObjs.pictureFrame);
+                            setPhone(returnObjs.phone);
+                        }}
+                    />
+                    <Avatar
+                        animation={animation}
+                        onReady={(avatarRef) => {
+                            setAvatar(avatarRef);
+                        }}
+                    />
+                </group>
                 <Scroll html>
-                    <SectionsWrapper>
-                        <Section
-                            key="home"
-                            title="Home Section"
-                            content={"Home Section"}
-                            meshRef={
-                                monitorRef as React.RefObject<THREE.Object3D>
-                            }
-                        />
-                        <Section
-                            key="about"
-                            title="About Section"
-                            content={"About Section"}
-                            meshRef={
-                                pictureFrameRef as React.RefObject<THREE.Object3D>
-                            }
-                        />
-                        <Section
-                            key="contact"
-                            title="Contact Section"
-                            content={"Contact Section"}
-                            meshRef={
-                                undefined as unknown as React.RefObject<THREE.Object3D>
-                            }
-                        />
-                    </SectionsWrapper>
+                    <SceneContext.Provider value={sceneContext}>
+                        <SectionsWrapper>
+                            {monitor && (
+                                <Section
+                                    id="home"
+                                    title="Home Section"
+                                    content={"Home Section"}
+                                    object3d={monitor}
+                                />
+                            )}
+                            {pictureFrame && (
+                                <Section
+                                    id="about"
+                                    title="About Section"
+                                    content={"About Section"}
+                                    object3d={pictureFrame}
+                                />
+                            )}
+                            {phone && (
+                                <Section
+                                    id="contact"
+                                    title="Contact Section"
+                                    content={"Contact Section"}
+                                    object3d={phone}
+                                />
+                            )}
+                        </SectionsWrapper>
+                    </SceneContext.Provider>
                 </Scroll>
                 <ScrollBehavior />
             </ScrollControls>
 
             {/* <OrbitControls /> */}
-            <PerspectiveCamera
-                ref={cameraRef}
-                makeDefault
-                position={[5, 2, 5]}
-            />
+            <PerspectiveCamera makeDefault position={[5, 2, 5]} />
         </>
     );
 };

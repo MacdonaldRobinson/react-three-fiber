@@ -38,7 +38,7 @@ type GLTFResult = GLTF & {
 };
 
 type TAvatar = {
-    onReady: (avatarRef: React.RefObject<THREE.Object3D>) => void;
+    onReady: (avatar: THREE.Object3D) => void;
     animation: string;
 } & JSX.IntrinsicElements["group"];
 export function Avatar({ onReady, animation, ...props }: TAvatar) {
@@ -70,8 +70,12 @@ export function Avatar({ onReady, animation, ...props }: TAvatar) {
     );
 
     useEffect(() => {
+        if (!avatarRef.current) {
+            return;
+        }
+
         if (onReady) {
-            onReady(avatarRef);
+            onReady(avatarRef.current);
         }
     }, [avatarRef, onReady]);
 
@@ -90,6 +94,7 @@ export function Avatar({ onReady, animation, ...props }: TAvatar) {
 
     useEffect(() => {
         actions[animation]?.reset().fadeIn(0.5).play();
+
         return () => {
             actions[animation]?.reset().fadeOut(0.5).play();
         };

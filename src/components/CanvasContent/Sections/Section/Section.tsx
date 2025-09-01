@@ -3,10 +3,8 @@ import { useContext, useEffect, useRef } from "react";
 import SceneContext, {
     type TSectionProps,
 } from "../../../../contexts/SceneContext/SceneContext";
-import { useThree } from "@react-three/fiber";
 
-const Section = ({ title, content, meshRef }: TSectionProps) => {
-    const { camera } = useThree();
+const Section = ({ id, title, content, object3d }: TSectionProps) => {
     const sectionRef = useRef<HTMLDivElement>(null);
     const sceneContext = useContext(SceneContext);
 
@@ -17,23 +15,25 @@ const Section = ({ title, content, meshRef }: TSectionProps) => {
             return;
         }
 
-        if (!meshRef || !meshRef.current) {
+        if (!object3d) {
             return;
         }
-
         sceneContext.addSection({
-            htmlRef: sectionRef,
-            meshRef: meshRef,
+            id: id,
+            htmlElement: sectionRef.current,
+            object3d: object3d,
         });
-    }, [meshRef, sceneContext, sectionRef]);
+    }, [id, object3d, sceneContext, sectionRef, title]);
+
+    const OnViewportEnter = () => {
+        const found = sceneContext?.sections.find((s) => s.id == id);
+        if (found) {
+            sceneContext?.setActiveSection(found);
+        }
+    };
 
     return (
-        <SectionWrapper
-            ref={sectionRef}
-            onViewportEnter={() => {
-                console.log(camera);
-            }}
-        >
+        <SectionWrapper ref={sectionRef} onViewportEnter={OnViewportEnter}>
             <h2>{title}</h2>
             <div>{content}</div>
         </SectionWrapper>

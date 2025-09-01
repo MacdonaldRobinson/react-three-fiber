@@ -4,9 +4,13 @@ Command: npx gltfjsx@6.5.3 .\public\models\room\room.glb --typescript --output s
 */
 
 import * as THREE from "three";
-import React, { useEffect, useRef, type JSX } from "react";
-import { useGLTF } from "@react-three/drei";
+import React, { useContext, useEffect, useRef, type JSX } from "react";
+import { useGLTF, useScroll } from "@react-three/drei";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+import SceneContext, {
+    type TSection,
+} from "../../contexts/SceneContext/SceneContext";
+import { useFrame, useThree } from "@react-three/fiber";
 
 type GLTFResult = GLTF & {
     nodes: {
@@ -87,17 +91,17 @@ type GLTFResult = GLTF & {
 };
 
 export type TOnReadyReturn = {
-    chairRef: React.RefObject<THREE.Object3D | null>;
-    phoneRef: React.RefObject<THREE.Object3D | null>;
-    cupRef: React.RefObject<THREE.Object3D | null>;
-    monitorRef: React.RefObject<THREE.Object3D | null>;
-    pictureFrameRef: React.RefObject<THREE.Object3D | null>;
-    papersRef: React.RefObject<THREE.Object3D | null>;
-    mousePadRef: React.RefObject<THREE.Object3D | null>;
+    chair: THREE.Object3D;
+    phone: THREE.Object3D;
+    cup: THREE.Object3D;
+    monitor: THREE.Object3D;
+    pictureFrame: THREE.Object3D;
+    papers: THREE.Object3D;
+    mousePad: THREE.Object3D;
 };
 
 type TRoomScene = {
-    onReady: (returnRefs: TOnReadyReturn) => void;
+    onReady: (returnObjs: TOnReadyReturn) => void;
 } & JSX.IntrinsicElements["group"];
 
 export function RoomScene({ onReady, ...props }: TRoomScene) {
@@ -112,18 +116,42 @@ export function RoomScene({ onReady, ...props }: TRoomScene) {
     const papersRef = useRef<THREE.Object3D>(null);
     const mousePadRef = useRef<THREE.Object3D>(null);
 
-    useEffect(() => {
-        if (onReady) {
-            onReady({
-                chairRef: chairRef,
-                cupRef: cupRef,
-                monitorRef: monitorRef,
-                mousePadRef: mousePadRef,
-                papersRef: papersRef,
-                phoneRef: phoneRef,
-                pictureFrameRef: pictureFrameRef,
-            });
+    const sceneContext = useContext(SceneContext);
+    const handleClick = (event) => {
+        if (!sceneContext) return;
+
+        const found = sceneContext.sections.find(
+            (section) => section.object3d.uuid == event.eventObject.uuid
+        );
+
+        if (found) {
+            sceneContext.setActiveSection(found);
         }
+    };
+
+    useEffect(() => {
+        if (
+            !onReady ||
+            !chairRef.current ||
+            !cupRef.current ||
+            !monitorRef.current ||
+            !mousePadRef.current ||
+            !papersRef.current ||
+            !phoneRef.current ||
+            !pictureFrameRef.current
+        ) {
+            return;
+        }
+
+        onReady({
+            chair: chairRef.current,
+            cup: cupRef.current,
+            monitor: monitorRef.current,
+            mousePad: mousePadRef.current,
+            papers: papersRef.current,
+            phone: phoneRef.current,
+            pictureFrame: pictureFrameRef.current,
+        });
     }, [chairRef, onReady]);
 
     return (
@@ -134,6 +162,7 @@ export function RoomScene({ onReady, ...props }: TRoomScene) {
                     rotation={[-Math.PI / 2, 0, 2.917]}
                     scale={48.098}
                     ref={pictureFrameRef}
+                    onClick={handleClick}
                 >
                     <mesh
                         geometry={
@@ -221,6 +250,7 @@ export function RoomScene({ onReady, ...props }: TRoomScene) {
                     rotation={[-Math.PI / 2, 0, -3.093]}
                     scale={2.911}
                     ref={chairRef}
+                    onClick={handleClick}
                 >
                     <mesh
                         geometry={nodes.Chair003_1.geometry}
@@ -289,6 +319,7 @@ export function RoomScene({ onReady, ...props }: TRoomScene) {
                     rotation={[-Math.PI / 2, 0, 1.547]}
                     scale={[17.231, 20.977, 0.228]}
                     ref={mousePadRef}
+                    onClick={handleClick}
                 />
                 <group
                     position={[0.828, 0.526, -10.42]}
@@ -309,6 +340,7 @@ export function RoomScene({ onReady, ...props }: TRoomScene) {
                     rotation={[-Math.PI / 2, 0, 1.571]}
                     scale={219.88}
                     ref={papersRef}
+                    onClick={handleClick}
                 >
                     <mesh
                         geometry={nodes.Paper_1.geometry}
@@ -324,6 +356,7 @@ export function RoomScene({ onReady, ...props }: TRoomScene) {
                     rotation={[Math.PI / 2, 0, -0.451]}
                     scale={5618.099}
                     ref={phoneRef}
+                    onClick={handleClick}
                 >
                     <mesh
                         geometry={nodes.Phone_1.geometry}
@@ -345,6 +378,7 @@ export function RoomScene({ onReady, ...props }: TRoomScene) {
                     rotation={[-Math.PI / 2, 0, 1.025]}
                     scale={0.219}
                     ref={cupRef}
+                    onClick={handleClick}
                 />
                 <mesh
                     geometry={nodes["Monitor001|iMac|Dupli|"].geometry}
@@ -353,6 +387,7 @@ export function RoomScene({ onReady, ...props }: TRoomScene) {
                     rotation={[-Math.PI / 2, 0, -1.631]}
                     scale={1.135}
                     ref={monitorRef}
+                    onClick={handleClick}
                 />
             </group>
             <group scale={2}>
