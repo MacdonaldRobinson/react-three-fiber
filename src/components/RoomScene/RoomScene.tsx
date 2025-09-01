@@ -83,17 +83,17 @@ type GLTFResult = GLTF & {
         Walls: THREE.MeshStandardMaterial;
         Houseplant_mat1: THREE.MeshStandardMaterial;
     };
-    animations: GLTFAction[];
+    animations: GLTF["animations"];
 };
 
 export type TOnReadyReturn = {
-    chairRef: React.RefObject<unknown>;
-    phoneRef: React.RefObject<unknown>;
-    cupRef: React.RefObject<unknown>;
-    monitorRef: React.RefObject<unknown>;
-    pictureFrameRef: React.RefObject<unknown>;
-    papersRef: React.RefObject<unknown>;
-    mousePadRef: React.RefObject<unknown>;
+    chairRef: React.RefObject<THREE.Object3D | null>;
+    phoneRef: React.RefObject<THREE.Object3D | null>;
+    cupRef: React.RefObject<THREE.Object3D | null>;
+    monitorRef: React.RefObject<THREE.Object3D | null>;
+    pictureFrameRef: React.RefObject<THREE.Object3D | null>;
+    papersRef: React.RefObject<THREE.Object3D | null>;
+    mousePadRef: React.RefObject<THREE.Object3D | null>;
 };
 
 type TRoomScene = {
@@ -101,14 +101,16 @@ type TRoomScene = {
 } & JSX.IntrinsicElements["group"];
 
 export function RoomScene({ onReady, ...props }: TRoomScene) {
-    const { nodes, materials } = useGLTF("models/room/room.glb") as GLTFResult;
-    const chairRef = useRef();
-    const phoneRef = useRef();
-    const cupRef = useRef();
-    const monitorRef = useRef();
-    const pictureFrameRef = useRef();
-    const papersRef = useRef();
-    const mousePadRef = useRef();
+    const { nodes, materials } = useGLTF(
+        "models/room/room.glb"
+    ) as unknown as GLTFResult;
+    const chairRef = useRef<THREE.Object3D>(null);
+    const phoneRef = useRef<THREE.Object3D>(null);
+    const cupRef = useRef<THREE.Object3D>(null);
+    const monitorRef = useRef<THREE.Object3D>(null);
+    const pictureFrameRef = useRef<THREE.Object3D>(null);
+    const papersRef = useRef<THREE.Object3D>(null);
+    const mousePadRef = useRef<THREE.Object3D>(null);
 
     useEffect(() => {
         if (onReady) {

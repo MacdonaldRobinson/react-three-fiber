@@ -1,11 +1,9 @@
 import {
     Environment,
-    OrbitControls,
     PerspectiveCamera,
     Scroll,
     ScrollControls,
     Sky,
-    useScroll,
 } from "@react-three/drei";
 import { Avatar } from "../Avatar/Avatar";
 import { useControls } from "leva";
@@ -18,12 +16,17 @@ import Section from "./Sections/Section/Section";
 import { SectionsWrapper } from "./CanvasContent.styles";
 
 const CanvasContent = () => {
-    const cameraRef = useRef(null);
-    const [avatarRef, setAvatarRef] = useState();
-    const [chairRef, setChairRef] = useState();
-    const [phoneRef, setPhoneRef] = useState();
-    const [monitorRef, setMonitorRef] = useState();
-    const [pictureFrameRef, setPictureFrameRef] = useState();
+    const cameraRef = useRef<THREE.PerspectiveCamera>(null);
+    const [avatarRef, setAvatarRef] =
+        useState<React.RefObject<THREE.Object3D | null>>();
+    const [chairRef, setChairRef] =
+        useState<React.RefObject<THREE.Object3D | null>>();
+    const [phoneRef, setPhoneRef] =
+        useState<React.RefObject<THREE.Object3D | null>>();
+    const [monitorRef, setMonitorRef] =
+        useState<React.RefObject<THREE.Object3D | null>>();
+    const [pictureFrameRef, setPictureFrameRef] =
+        useState<React.RefObject<THREE.Object3D | null>>();
 
     useEffect(() => {
         if (chairRef?.current && avatarRef?.current && cameraRef?.current) {
@@ -88,19 +91,25 @@ const CanvasContent = () => {
                             key="home"
                             title="Home Section"
                             content={"Home Section"}
-                            meshRef={monitorRef}
+                            meshRef={
+                                monitorRef as React.RefObject<THREE.Object3D>
+                            }
                         />
                         <Section
                             key="about"
                             title="About Section"
                             content={"About Section"}
-                            meshRef={pictureFrameRef}
+                            meshRef={
+                                pictureFrameRef as React.RefObject<THREE.Object3D>
+                            }
                         />
                         <Section
                             key="contact"
                             title="Contact Section"
                             content={"Contact Section"}
-                            meshRef={phoneRef}
+                            meshRef={
+                                undefined as unknown as React.RefObject<THREE.Object3D>
+                            }
                         />
                     </SectionsWrapper>
                 </Scroll>

@@ -1,6 +1,6 @@
-import { useScroll } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
+// import { useScroll } from "@react-three/drei";
+// import { useFrame } from "@react-three/fiber";
+// import * as THREE from "three";
 
 const ScrollBehavior = () => {
     // const scroll = useScroll();

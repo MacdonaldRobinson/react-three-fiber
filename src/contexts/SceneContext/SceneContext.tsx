@@ -5,11 +5,11 @@ export type TSectionProps = {
     key: string;
     title: string;
     content: React.ReactNode;
-    meshRef: React.RefObject<THREE.Mesh | THREE.Group>;
+    meshRef: React.RefObject<THREE.Object3D>;
 };
 
 export type TSection = {
-    meshRef: React.RefObject<THREE.Mesh | THREE.Group>;
+    meshRef: React.RefObject<THREE.Object3D>;
     htmlRef: React.RefObject<HTMLElement | null>;
 };
 
